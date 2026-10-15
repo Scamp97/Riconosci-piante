@@ -10,13 +10,17 @@ const upload = multer({
 app.use(express.static("public"));
 
 app.post("/api/identify", upload.single("image"), async (req, res) => {
-  console.log("richiesta di identificazione ricevuta");
+  console.log("Richiesta di identificazione ricevuta");
+
   try {
     if (!req.file) {
-      return res.status(400).json({ error: "Seleziona prima una foto." });
+      return res.status(400).json({ error: "Foto mancante." });
     }
 
-    const imageBase64 = req.file.buffer.toString("base64");
+    if (!process.env.PLANT_ID_API_KEY) {
+      console.error("Manca la variabile PLANT_ID_API_KEY");
+      return res.status(500).json({ error: "Configurazione API mancante." });
+    }
 
     const response = await fetch(
       "https://api.plant.id/v3/identification",
@@ -27,21 +31,25 @@ app.post("/api/identify", upload.single("image"), async (req, res) => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          images: [imageBase64],
+          images: [req.file.buffer.toString("base64")],
           similar_images: false
         })
       }
     );
 
-    const data = await response.json();
+    const text = await response.text();
+
     if (!response.ok) {
-      console.error("Errore API:". response.status, JSON.stringify(data)):
-      return res.status(response.status).json({ error:"Errore restituito dal servizio di identificazione."}):
-                      }
-    res.json(data);
+      console.error("Errore API:", response.status, text);
+      return res.status(response.status).json({
+        error: "Il servizio di identificazione ha restituito un errore."
+      });
+    }
+
+    res.json(JSON.parse(text));
   } catch (error) {
-    console.error("Errore durante la richiesta:", error.message):
-    res.status(500).json({ error: "Errore del server durante l'analisi." }):
+    console.error("Errore server:", error.message);
+    res.status(500).json({ error: "Errore del server durante l’analisi." });
   }
 });
 
