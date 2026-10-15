@@ -31,8 +31,7 @@ app.post("/api/identify", upload.single("image"), async (req, res) => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          images: [req.file.buffer.toString("base64")],
-          similar_images: false
+          images: [req.file.buffer.toString("base64")]
         })
       }
     );
@@ -56,3 +55,4 @@ app.post("/api/identify", upload.single("image"), async (req, res) => {
 app.listen(process.env.PORT || 3000, () => {
   console.log("Server avviato");
 });
+
