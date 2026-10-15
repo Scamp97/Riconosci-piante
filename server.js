@@ -10,6 +10,7 @@ const upload = multer({
 app.use(express.static("public"));
 
 app.post("/api/identify", upload.single("image"), async (req, res) => {
+  console.log("richiesta di identificazione ricevuta");
   try {
     if (!req.file) {
       return res.status(400).json({ error: "Seleziona prima una foto." });
