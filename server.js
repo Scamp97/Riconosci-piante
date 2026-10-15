@@ -35,14 +35,13 @@ app.post("/api/identify", upload.single("image"), async (req, res) => {
 
     const data = await response.json();
     if (!response.ok) {
-      return res.status(response.status).json({
-        error: "Il servizio di identificazione ha restituito un errore."
-      });
-    }
-
+      console.error("Errore API:". response.status, JSON.stringify(data)):
+      return res.status(response.status).json({ error:"Errore restituito dal servizio di identificazione."}):
+                      }
     res.json(data);
-  } catch {
-    res.status(500).json({ error: "Errore del server durante l’analisi." });
+  } catch (error) {
+    console.error("Errore durante la richiesta:", error.message):
+    res.status(500).json({ error: "Errore del server durante l'analisi." }):
   }
 });
 
