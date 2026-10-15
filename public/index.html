@@ -3,108 +3,320 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#174b35">
-  <title>Riconosci la pianta</title>
+  <meta name="theme-color" content="#173f32">
+  <title>Verde — Identifica la tua pianta</title>
+
   <style>
+    :root {
+      color-scheme: light;
+      --green: #1c6849;
+      --dark: #18372b;
+      --muted: #718078;
+      --bg: #f2f5ef;
+      --line: #e4eae2;
+    }
+
     * { box-sizing: border-box; }
+
     body {
-      margin: 0; padding: 24px 16px; font-family: system-ui, sans-serif;
-      background: #f4f7f2; color: #183126;
+      min-height: 100vh;
+      margin: 0;
+      padding: 28px 16px;
+      color: var(--dark);
+      background:
+        radial-gradient(ellipse at 10% 0%, #dcebdc 0, transparent 34%),
+        var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
     }
-    main {
-      max-width: 520px; margin: 0 auto; padding: 24px;
-      background: white; border-radius: 20px;
-      box-shadow: 0 8px 30px #173d2712;
+
+    main { width: min(100%, 620px); margin: 0 auto; }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 20px 4px;
+      font-weight: 800;
+      letter-spacing: -.03em;
     }
-    h1 { margin-top: 0; }
-    p { line-height: 1.5; }
-    input, button { width: 100%; font: inherit; }
-    input { margin: 12px 0; }
+
+    .brand-icon {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 13px;
+      color: white;
+      background: var(--green);
+      font-size: 20px;
+    }
+
+    .card {
+      overflow: hidden;
+      padding: clamp(22px, 6vw, 38px);
+      border: 1px solid #ffffff;
+      border-radius: 26px;
+      background: #fff;
+      box-shadow: 0 18px 55px #18372b12;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    h1 { margin: 0; font-size: clamp(29px, 7vw, 42px); letter-spacing: -.05em; }
+    .intro { margin: 12px 0 24px; color: var(--muted); line-height: 1.6; }
+
+    .upload {
+      display: grid;
+      min-height: 170px;
+      place-items: center;
+      padding: 20px;
+      border: 2px dashed #cbd9ce;
+      border-radius: 20px;
+      background: #f8faf7;
+      text-align: center;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .upload:hover { border-color: var(--green); background: #f3f8f3; }
+    .upload-icon { font-size: 32px; }
+    .upload strong { display: block; margin: 8px 0 4px; }
+    .upload small { color: var(--muted); }
+    input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+
+    #anteprima {
+      display: none;
+      width: 100%;
+      max-height: 360px;
+      margin-top: 16px;
+      border-radius: 18px;
+      object-fit: cover;
+    }
+
     button {
-      border: 0; border-radius: 12px; padding: 14px;
-      color: white; background: #176b45; font-weight: 700;
+      width: 100%;
+      margin-top: 18px;
+      padding: 15px 18px;
+      border: 0;
+      border-radius: 14px;
+      color: #fff;
+      background: var(--green);
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+      transition: .2s ease;
     }
-    button:disabled { opacity: .6; }
-    img { display: none; width: 100%; margin-top: 16px; border-radius: 12px; }
-    #risultato { margin-top: 20px; }
-    .avviso { padding: 12px; border-radius: 10px; background: #fff4d6; }
+
+    button:hover:not(:disabled) { background: #15563b; transform: translateY(-1px); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+
+    #risultato { margin-top: 24px; }
+    .status { color: var(--muted); text-align: center; }
+    .section-title { margin: 24px 0 12px; font-size: 17px; }
+
+    .plant, .health, .notice {
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fbfcfa;
+    }
+
+    .plant + .plant { margin-top: 10px; }
+    .plant-name { margin: 0 0 7px; font-size: 18px; }
+    .confidence { color: var(--muted); font-size: 14px; }
+    .bar { height: 7px; margin-top: 10px; overflow: hidden; border-radius: 9px; background: #e8eee8; }
+    .bar span { display: block; height: 100%; border-radius: inherit; background: #72a87d; }
+
+    .health { margin-top: 12px; }
+    .health.good { border-color: #cde6d2; background: #f2faf3; }
+    .health.bad { border-color: #f1d2c7; background: #fff7f3; }
+    .health-title { margin: 0 0 6px; font-weight: 800; }
+    .health p { margin: 6px 0 0; line-height: 1.5; }
+    .notice { margin-top: 14px; color: #67552b; background: #fff9e9; font-size: 13px; line-height: 1.55; }
+
+    @media (max-width: 480px) {
+      body { padding: 18px 12px; }
+      .card { border-radius: 21px; }
+    }
   </style>
 </head>
+
 <body>
-<main>
-  <h1>🌿 Riconosci la pianta</h1>
-  <p>Scatta una foto nitida delle foglie e, se possibile, dei fiori.</p>
+  <main>
+    <div class="brand"><span class="brand-icon">🌿</span> Verde</div>
 
-  <input id="foto" type="file" accept="image/*" capture="environment">
-  <img id="anteprima" alt="Anteprima della foto">
-  <button id="analizza" disabled>Analizza la foto</button>
+    <section class="card">
+      <p class="eyebrow">Il tuo assistente botanico</p>
+      <h1>Che pianta è?</h1>
+      <p class="intro">Carica una foto nitida: proveremo a riconoscere la pianta e a controllarne lo stato di salute.</p>
 
-  <div id="risultato" aria-live="polite"></div>
-</main>
+      <label class="upload" for="foto">
+        <span>
+          <span class="upload-icon">📷</span>
+          <strong>Scegli o scatta una foto</strong>
+          <small>Meglio se si vedono bene foglie e fiori</small>
+        </span>
+      </label>
+      <input id="foto" type="file" accept="image/*" capture="environment">
 
-<script>
-  const input = document.querySelector("#foto");
-  const preview = document.querySelector("#anteprima");
-  const button = document.querySelector("#analizza");
-  const result = document.querySelector("#risultato");
-  let imageFile;
+      <img id="anteprima" alt="Anteprima della foto">
+      <button id="analizza" disabled>Analizza la pianta</button>
+      <div id="risultato" aria-live="polite"></div>
+    </section>
+  </main>
 
-  input.addEventListener("change", () => {
-    imageFile = input.files?.[0];
-    result.textContent = "";
-    if (!imageFile) return;
-    preview.src = URL.createObjectURL(imageFile);
-    preview.style.display = "block";
-    button.disabled = false;
-  });
+  <script>
+    const input = document.querySelector("#foto");
+    const preview = document.querySelector("#anteprima");
+    const button = document.querySelector("#analizza");
+    const result = document.querySelector("#risultato");
+    let imageFile;
+    let previewUrl;
 
-  button.addEventListener("click", async () => {
-    if (!imageFile) return;
-    button.disabled = true;
-    result.textContent = "Analisi in corso…";
+    input.addEventListener("change", () => {
+      imageFile = input.files?.[0];
+      result.replaceChildren();
 
-    try {
-      const form = new FormData();
-      form.append("image", imageFile);
-
-      const response = await fetch("/api/identify", {
-        method: "POST",
-        body: form
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Analisi non riuscita.");
-
-      const suggestions = data.result?.classification?.suggestions || [];
-      if (!suggestions.length) {
-        result.textContent = "Non sono riuscito a identificare la pianta. Prova con un’altra foto.";
+      if (!imageFile) {
+        button.disabled = true;
+        preview.style.display = "none";
         return;
       }
 
-      result.replaceChildren();
-      const heading = document.createElement("h2");
-      heading.textContent = "Possibili identificazioni";
-      result.append(heading);
-
-      const list = document.createElement("ul");
-      for (const plant of suggestions.slice(0, 3)) {
-        const item = document.createElement("li");
-        item.textContent =
-          `${plant.name} — confidenza ${Math.round(plant.probability * 100)}%`;
-        list.append(item);
-      }
-      result.append(list);
-
-      const warning = document.createElement("p");
-      warning.className = "avviso";
-      warning.textContent =
-        "Attenzione: il riconoscimento può sbagliare. Non mangiare né toccare la pianta basandoti solo su questo risultato. In caso di ingestione o sintomi, contatta subito un centro antiveleni o un veterinario.";
-      result.append(warning);
-    } catch (error) {
-      result.textContent = error.message || "Errore durante l’analisi.";
-    } finally {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      previewUrl = URL.createObjectURL(imageFile);
+      preview.src = previewUrl;
+      preview.style.display = "block";
       button.disabled = false;
+    });
+
+    function addText(tag, className, text, parent = result) {
+      const element = document.createElement(tag);
+      if (className) element.className = className;
+      element.textContent = text;
+      parent.append(element);
+      return element;
     }
-  });
-</script>
+
+    function showHealth(data) {
+      const health = data.result?.is_healthy;
+      const diseases = data.result?.disease?.suggestions || [];
+
+      if (typeof health?.binary !== "boolean" && diseases.length === 0) {
+        addText("p", "notice", "Lo stato di salute non è stato incluso nella risposta dell’API.");
+        return;
+      }
+
+      const healthy = health?.binary === true;
+      const box = document.createElement("div");
+      box.className = `health ${healthy ? "good" : "bad"}`;
+
+      const title = document.createElement("div");
+      title.className = "health-title";
+      title.textContent = healthy ? "✅ La pianta sembra in salute" : "⚠️ Possibili problemi di salute";
+      box.append(title);
+
+      if (diseases.length) {
+        diseases.slice(0, 3).forEach(issue => {
+          const p = document.createElement("p");
+          const confidence = Number.isFinite(issue.probability)
+            ? ` — confidenza ${Math.round(issue.probability * 100)}%`
+            : "";
+          p.textContent = `${issue.name || "Problema non specificato"}${confidence}`;
+          box.append(p);
+        });
+      } else if (!healthy) {
+        const p = document.createElement("p");
+        p.textContent = "L’analisi segnala possibili sintomi, ma non ha restituito dettagli.";
+        box.append(p);
+      }
+
+      result.append(box);
+    }
+
+    button.addEventListener("click", async () => {
+      if (!imageFile) return;
+
+      button.disabled = true;
+      result.replaceChildren();
+      addText("p", "status", "🌱 Sto analizzando la foto…");
+
+      try {
+        const form = new FormData();
+        form.append("image", imageFile);
+
+        const response = await fetch("/api/identify", {
+          method: "POST",
+          body: form
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Analisi non riuscita.");
+        }
+
+        result.replaceChildren();
+        const suggestions = data.result?.classification?.suggestions || [];
+
+        if (suggestions.length) {
+          addText("h2", "section-title", "Possibili identificazioni");
+
+          suggestions.slice(0, 3).forEach(plant => {
+            const card = document.createElement("div");
+            card.className = "plant";
+
+            const name = document.createElement("h3");
+            name.className = "plant-name";
+            name.textContent = plant.name || "Nome non disponibile";
+            card.append(name);
+
+            const probability = Number(plant.probability);
+            const percent = Number.isFinite(probability)
+              ? Math.round(probability * 100)
+              : null;
+
+            if (percent !== null) {
+              const confidence = document.createElement("div");
+              confidence.className = "confidence";
+              confidence.textContent = `Confidenza: ${percent}%`;
+              card.append(confidence);
+
+              const bar = document.createElement("div");
+              bar.className = "bar";
+              const fill = document.createElement("span");
+              fill.style.width = `${Math.max(0, Math.min(percent, 100))}%`;
+              bar.append(fill);
+              card.append(bar);
+            }
+
+            result.append(card);
+          });
+        } else {
+          addText("p", "notice", "Non sono riuscito a identificare la pianta. Prova con una foto più nitida.");
+        }
+
+        addText("h2", "section-title", "Stato di salute");
+        showHealth(data);
+
+        addText(
+          "p",
+          "notice",
+          "Il risultato è indicativo: non basarti solo sull’analisi per decidere se una pianta è sicura da toccare o mangiare."
+        );
+      } catch (error) {
+        result.replaceChildren();
+        addText("p", "notice", error.message || "Errore durante l’analisi.");
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>
