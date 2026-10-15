@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#174b35">
+  <title>Riconosci la pianta</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px 16px; font-family: system-ui, sans-serif;
+      background: #f4f7f2; color: #183126;
+    }
+    main {
+      max-width: 520px; margin: 0 auto; padding: 24px;
+      background: white; border-radius: 20px;
+      box-shadow: 0 8px 30px #173d2712;
+    }
+    h1 { margin-top: 0; }
+    p { line-height: 1.5; }
+    input, button { width: 100%; font: inherit; }
+    input { margin: 12px 0; }
+    button {
+      border: 0; border-radius: 12px; padding: 14px;
+      color: white; background: #176b45; font-weight: 700;
+    }
+    button:disabled { opacity: .6; }
+    img { display: none; width: 100%; margin-top: 16px; border-radius: 12px; }
+    #risultato { margin-top: 20px; }
+    .avviso { padding: 12px; border-radius: 10px; background: #fff4d6; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🌿 Riconosci la pianta</h1>
+  <p>Scatta una foto nitida delle foglie e, se possibile, dei fiori.</p>
+
+  <input id="foto" type="file" accept="image/*" capture="environment">
+  <img id="anteprima" alt="Anteprima della foto">
+  <button id="analizza" disabled>Analizza la foto</button>
+
+  <div id="risultato" aria-live="polite"></div>
+</main>
+
+<script>
+  const input = document.querySelector("#foto");
+  const preview = document.querySelector("#anteprima");
+  const button = document.querySelector("#analizza");
+  const result = document.querySelector("#risultato");
+  let imageFile;
+
+  input.addEventListener("change", () => {
+    imageFile = input.files?.[0];
+    result.textContent = "";
+    if (!imageFile) return;
+    preview.src = URL.createObjectURL(imageFile);
+    preview.style.display = "block";
+    button.disabled = false;
+  });
+
+  button.addEventListener("click", async () => {
+    if (!imageFile) return;
+    button.disabled = true;
+    result.textContent = "Analisi in corso…";
+
+    try {
+      const form = new FormData();
+      form.append("image", imageFile);
+
+      const response = await fetch("/api/identify", {
+        method: "POST",
+        body: form
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Analisi non riuscita.");
+
+      const suggestions = data.result?.classification?.suggestions || [];
+      if (!suggestions.length) {
+        result.textContent = "Non sono riuscito a identificare la pianta. Prova con un’altra foto.";
+        return;
+      }
+
+      result.replaceChildren();
+      const heading = document.createElement("h2");
+      heading.textContent = "Possibili identificazioni";
+      result.append(heading);
+
+      const list = document.createElement("ul");
+      for (const plant of suggestions.slice(0, 3)) {
+        const item = document.createElement("li");
+        item.textContent =
+          `${plant.name} — confidenza ${Math.round(plant.probability * 100)}%`;
+        list.append(item);
+      }
+      result.append(list);
+
+      const warning = document.createElement("p");
+      warning.className = "avviso";
+      warning.textContent =
+        "Attenzione: il riconoscimento può sbagliare. Non mangiare né toccare la pianta basandoti solo su questo risultato. In caso di ingestione o sintomi, contatta subito un centro antiveleni o un veterinario.";
+      result.append(warning);
+    } catch (error) {
+      result.textContent = error.message || "Errore durante l’analisi.";
+    } finally {
+      button.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
